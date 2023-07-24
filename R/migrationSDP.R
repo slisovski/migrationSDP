@@ -3,6 +3,7 @@
 # library(sf)
 # library(lwgeom)
 
+
 ## S2 Class
 setClass(
   "migrationSDP",
@@ -14,35 +15,22 @@ setClass(
 
 make_migrationSDP <- function(init, species, sites, parms, ...) {
   
-  # init =    list(minT    = ,
-  #                maxT    = ,
-  #                MaxX    = ,
-  #                tReward = ),
-  #                dError  = ),
-  # species = list(B0      = ,
-  #                w       = ,
-  #                xc      = ,
-  #                stdNorm = ,
-  #                speed   = ),
-  # sites   = list(crds    = ,
-  #                expend  = ,
-  #                gain    = ,
-  #                penalty = ),
-  # parms   = list(bearing = FALSE)
-  
   crds_sf <- sites$crds %>% st_as_sf(coords = names(crds), crs = 4326)
+  
   distM   <- st_distance(crds_sf, by_element = F)/1000
+  
   if(parms$bearing) {
     bearM <- matrix(apply(expand.grid(1:nrow(crds_sf), 1:nrow(crds_sf)), 1, function(x) round(lwgeom::st_geod_azimuth(crds_sf[as.numeric(x),])*180/pi,2)),
                     ncol = nrow(crds_sf), nrow = nrow(crds_sf), byrow = T)
   } else bearM <- matrix(0, ncol = nrow(crds_sf), nrow = nrow(crds_sf))
-
+  
+  penalty <- 1-rep(sites$penalty, c(1, nrow(crds)-2, 1))
+  
   
   new(
     "migrationSDP",
     Init  = list(
-      MinT   = init$minT,
-      MaxT   = init$maxT,
+      MaxT   = length(init$minT:init$maxT)-1,
       NSites = nrow(sites$crds)-1,
       MaxX   = init$MaxX
     ),
@@ -54,23 +42,25 @@ make_migrationSDP <- function(init, species, sites, parms, ...) {
       speed = species$speed,
       WindAssist = 0,
       WindProb   = 1,
-      ZStdNorm = species$stdNorm$x,
-      PStdNorm = do.call(species$stdNorm$dstr, species$stdNorm[-1]),
-      xFTReward  = 0:init$MaxX,
-      yFTReward  = do.call(init$tReward[[1]], c(x = list(0:init$MaxX), unlist(init$tReward[-1]))),
+      ZStdNorm   = c(-2.5, -2.0, -1.5, -1.0, -0.5,  0.0,  0.5,  1.0,  1.5,  2.0,  2.5),
+      PStdNorm   = c(0.0092, 0.0279, 0.0655, 0.1210, 0.1747, 0.2034, 0.1747, 0.1210, 0.0655, 0.0279, 0.0092),
+      xFTReward  = c(init$minT:init$maxT)-init$minT,
+      yFTReward  = scales::rescale(do.call(init$tReward[[1]], c(x = list(init$minT:init$maxT), unlist(init$tReward[-c(1, length(init$tReward))]))), 
+                                   c(0, init$tReward$factor)),
       decError   = init$dError
     ),
     Sites = list(
       crds  = sites$crds,
       dist  = distM,
       bear  = bearM,
-      b0    = c(0,0),
-      b1    = c(0,0),
-      b2    = c(0,0),
-      pred_a1 =  2,
-      pred_a2 =  2,
-      expend  =  sites$expend,
-      gain    =  sites$gain
+      b0    = rep(sites$pred[1], nrow(sites$crds)),
+      b1    = rep(sites$pred[2], nrow(sites$crds)),
+      b2    = rep(sites$pred[3], nrow(sites$crds)),
+      pred_a1 =  sites$pred[4],
+      pred_a2 =  sites$pred[4],
+      gain    = sites$gain,
+      expend  = sites$expend,
+      penalty = penalty
     ),
     Results = list(
       FitnessMatrix     = NA,
@@ -83,7 +73,8 @@ make_migrationSDP <- function(init, species, sites, parms, ...) {
 
 bwdIteration <- function(obj) {
 
-  Init(obj@Init$MaxT,          ## integer
+  Init(1,
+       obj@Init$MaxT,          ## integer
        obj@Init$NSites,        ## integer
        obj@Init$MaxX,          ## double
        obj@Species$w,          ## double
@@ -105,10 +96,10 @@ bwdIteration <- function(obj) {
        obj@Species$decError,   ## double
        obj@Sites$dist,         ## arma::mat
        obj@Sites$bear,         ## arma::mat
-       obj@Sites$gain,         ## arma::mat  
-       obj@Sites$gain,         ## arma::mat  
-       obj@Sites$gain,         ## arma::mat  
-       obj@Sites$expend)       ## arma::mat
+       obj@Sites$gain,         ## Rcpp::NumericVector 
+       obj@Sites$expend,       ## arma::mat
+       obj@Sites$penalty       ## Rcpp::NumericVector 
+       )
   
   out <- BackwardIteration()
 
@@ -124,3 +115,117 @@ bwdIteration <- function(obj) {
 
   obj
 }
+
+
+#### Foreward
+fwdSimulation <- function(model, NrInd, start_t, start_site, start_x) {
+  
+  InitSim(1, 
+          model@Init$MaxT, 
+          model@Init$NSites, 
+          model@Init$MaxX,
+          model@Species$w,
+          model@Species$xc,
+          model@Species$B0,
+          model@Sites$b0,
+          model@Sites$b1,
+          model@Sites$b2,
+          model@Sites$pred_a1,
+          model@Sites$pred_a2,
+          model@Species$c,
+          model@Species$speed,
+          model@Species$WindAssist,
+          model@Species$WindProb,
+          model@Species$ZStdNorm,
+          model@Species$PStdNorm,
+          model@Species$xFTReward,
+          model@Species$yFTReward,
+          model@Species$decError,
+          model@Sites$dist,
+          model@Sites$bear,
+          model@Sites$gain,
+          model@Sites$expend)
+  
+  
+  x <- round(runif(NrInd, start_x[1], start_x[2]),0)
+
+  if(length(start_site)>1 & length(start_site)<start_x[1]) {
+    stop("start_site must have same length as numbers of individuals or a single site.")
+  }
+  if(length(start_site)==1) start_site <- rep(start_site, NrInd)
+
+  SimOut = array(dim = c(length(x), 6, dim(model@Results$FitnessMatrix)[1]))
+
+  ### First entry
+  for(i in 1:dim(SimOut)[1]) {
+    SimOut[i, ,start_t] <- c(start_t, start_site[i], x[i], 0, 0, 0)
+  }
+
+
+  ## SimOut: 1 = time, 2 = site, 3 = x, 4 = decision, 5 = flying, 6 = dead {
+  for(time in 1:(dim(SimOut)[3]-1)) {
+
+    for(ind in 1:dim(SimOut)[1]) {
+
+      ## Not dead, not arrived, not flying
+      if(!SimOut[ind, 6, time] &
+         sum(SimOut[ind, 2, ] >= nrow(model@Sites$crds), na.rm = T)<1 & !SimOut[ind, 5, time]) {
+
+        ## Decision
+        if(runif(1) <  model@Results$ProbMatrix[SimOut[ind, 2, time], time, SimOut[ind, 3, time], 1]) {
+          decision  <- model@Results$DecisionMatrix[SimOut[ind, 2, time], time, SimOut[ind, 3, time], 1]
+        } else {
+          decision  <- model@Results$DecisionMatrix[SimOut[ind, 2, time], time, SimOut[ind, 3, time], 2]
+        }
+
+        ## Action
+        if(decision>=0) { ## Flying
+
+          fl_help = simFlying(decision, time-1, SimOut[ind, 2, time]-1, SimOut[ind, 3, time])
+
+          nextt = fl_help[1] + 1
+          if(nextt<=time) nextt <- time+1
+          if(nextt>dim(SimOut)[3]) time <- dim(SimOut)[3]
+
+          nextx = fl_help[2] + 1
+          if(nextx <  0) {
+            nextx = 0
+            dead  = 1 } else  dead = 0
+          if(nextx > model@Init$MaxX) nextx = model@Init$MaxX
+
+          SimOut[ind,,nextt] = c(nextt, decision+1, nextx, NA, 0, dead)
+          if(nextt>(time+1)) SimOut[ind,5:6,(time+1):(nextt-1)] = cbind(1,0)
+          if(SimOut[ind, 6, nextt])  SimOut[ind, 6, nextt:dim(SimOut)[3]] = 1 ## if dead make dead till the end
+
+          if(SimOut[ind, 2, nextt]==nrow(model@Sites$crds)) {
+            SimOut[ind,2:6, nextt:dim(SimOut)[3]] <- SimOut[ind, 2:6, nextt]
+            SimOut[ind,1,   nextt:dim(SimOut)[3]] <- seq(nextt, dim(SimOut)[3])
+          }
+
+        } else { ## Feeding
+
+          fo_help = simForaging(abs(decision+1.0), time-1, SimOut[ind, 2, time]-1, SimOut[ind, 3, time])
+
+          newx = fo_help[1]+1
+          dead = fo_help[2]
+          if(newx<=0) dead = 1
+
+          if(newx > model@Init$MaxX) newx = model@Init$MaxX
+
+          SimOut[ind,,time+1] = c(time+1, SimOut[ind, 2, time], newx, abs(decision+1.0), 0, dead)
+
+          if(SimOut[ind, 6, time+1])  SimOut[ind, 6, (time+1):dim(SimOut)[3]] = 1 ## if dead make dead till the end
+
+        }
+
+      }
+
+    } ## Ind loop
+  } ## time loop
+
+  SimOut       <- SimOut[,-5,]
+  SimOut[,2,] <- SimOut[,2,]-1
+  
+  SimOut
+}
+
