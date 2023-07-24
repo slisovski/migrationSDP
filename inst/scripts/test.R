@@ -4,6 +4,9 @@ library(sf)
 sf_use_s2(FALSE)
 library(stars)
 
+source(system.file(package='migrationSDP', 'scripts/functions.R'))
+
+
 ### setup locations
 start_end <- list(st_point(c(140, -40)), st_point(c(140, 75))) %>% st_as_sfc() %>% st_set_crs(4326)
 
