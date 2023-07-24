@@ -7,6 +7,6 @@ Author: Simeon Lisovski
 Maintainer: Simeon Lisovski <Simeon.Lisovski@gmail.com>
 Description: ...
 License: GPL (>= 2)
-Depends: RcppArmadillo, fGarch, sf
+Depends: RcppArmadillo, sf
 Imports: Rcpp (>= 1.0.10)
 LinkingTo: RcppArmadillo, Rcpp
