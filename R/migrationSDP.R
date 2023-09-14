@@ -21,9 +21,9 @@ make_migrationSDP <- function(init, species, sites, parms, ...) {
   
   if(parms$bearing) {
 
-    distM <- distm(crds_sf %>% st_coordinates(), fun = geosphere::bearing)
-    distM[lower.tri(distM)] <- distM[lower.tri(distM)] -180 %% 360
-    bearM <- abs(distM)
+    bearM <- distm(crds_sf %>% st_coordinates(), fun = geosphere::bearing)
+    bearM[lower.tri(bearM)] <- bearM[lower.tri(bearM)] -180 %% 360
+    bearM <- abs(bearM)
     
   } else bearM <- matrix(0, ncol = nrow(crds_sf), nrow = nrow(crds_sf))
   
