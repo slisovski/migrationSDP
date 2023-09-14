@@ -20,8 +20,11 @@ make_migrationSDP <- function(init, species, sites, parms, ...) {
   distM   <- st_distance(crds_sf, by_element = F)/1000
   
   if(parms$bearing) {
-    bearM <- matrix(apply(expand.grid(1:nrow(crds_sf), 1:nrow(crds_sf)), 1, function(x) round(lwgeom::st_geod_azimuth(crds_sf[as.numeric(x),])*180/pi,2)),
-                    ncol = nrow(crds_sf), nrow = nrow(crds_sf), byrow = T)
+
+    distM <- distm(crds_sf %>% st_coordinates(), fun = geosphere::bearing)
+    distM[lower.tri(distM)] <- distM[lower.tri(distM)] -180 %% 360
+    bearM <- abs(distM)
+    
   } else bearM <- matrix(0, ncol = nrow(crds_sf), nrow = nrow(crds_sf))
   
   penalty <- 1-rep(sites$penalty, c(1, nrow(crds)-2, 1))

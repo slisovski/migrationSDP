@@ -481,11 +481,11 @@ Rcpp::List BackwardIteration() {
 
         for (int dest = 0; dest <= sdp::NSites; ++dest)
         {
-          // if(sdp::bear(dest, site)>80) {
+          if(sdp::bear(dest, site)>80) {
             float help_z = Flying(time, site, x, dest);
             if(dest == site) help_z = 0;
             Mrew[dest] = help_z;
-          // }
+          }
         }
 
         double help_flying = 0.0;
