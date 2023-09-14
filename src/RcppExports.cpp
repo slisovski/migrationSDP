@@ -27,8 +27,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // Init
-void Init(int MinT, int MaxT, int NSites, int MaxX, double w, double xc, double B0, Rcpp::NumericVector b0, Rcpp::NumericVector b1, Rcpp::NumericVector b2, double pred_a1, double pred_a2, double c, double speed, Rcpp::NumericVector WindAssist, Rcpp::NumericVector WindProb, Rcpp::NumericVector ZStdNorm, Rcpp::NumericVector PStdNorm, Rcpp::NumericVector nTR_x, Rcpp::NumericVector nTR_y, double decError, arma::mat dist, arma::mat bear, Rcpp::NumericVector y_gain, arma::mat y_expend, Rcpp::NumericVector penalty);
-RcppExport SEXP _migrationSDP_Init(SEXP MinTSEXP, SEXP MaxTSEXP, SEXP NSitesSEXP, SEXP MaxXSEXP, SEXP wSEXP, SEXP xcSEXP, SEXP B0SEXP, SEXP b0SEXP, SEXP b1SEXP, SEXP b2SEXP, SEXP pred_a1SEXP, SEXP pred_a2SEXP, SEXP cSEXP, SEXP speedSEXP, SEXP WindAssistSEXP, SEXP WindProbSEXP, SEXP ZStdNormSEXP, SEXP PStdNormSEXP, SEXP nTR_xSEXP, SEXP nTR_ySEXP, SEXP decErrorSEXP, SEXP distSEXP, SEXP bearSEXP, SEXP y_gainSEXP, SEXP y_expendSEXP, SEXP penaltySEXP) {
+void Init(int MinT, int MaxT, int NSites, int MaxX, double w, double xc, double B0, Rcpp::NumericVector b0, Rcpp::NumericVector b1, Rcpp::NumericVector b2, double pred_a1, double pred_a2, double c, double speed, Rcpp::NumericVector WindAssist, Rcpp::NumericVector WindProb, Rcpp::NumericVector ZStdNorm, Rcpp::NumericVector PStdNorm, Rcpp::NumericVector nTR_x, Rcpp::NumericVector nTR_y, double decError, arma::mat dist, arma::mat bear, double angle, Rcpp::NumericVector y_gain, arma::mat y_expend, Rcpp::NumericVector penalty);
+RcppExport SEXP _migrationSDP_Init(SEXP MinTSEXP, SEXP MaxTSEXP, SEXP NSitesSEXP, SEXP MaxXSEXP, SEXP wSEXP, SEXP xcSEXP, SEXP B0SEXP, SEXP b0SEXP, SEXP b1SEXP, SEXP b2SEXP, SEXP pred_a1SEXP, SEXP pred_a2SEXP, SEXP cSEXP, SEXP speedSEXP, SEXP WindAssistSEXP, SEXP WindProbSEXP, SEXP ZStdNormSEXP, SEXP PStdNormSEXP, SEXP nTR_xSEXP, SEXP nTR_ySEXP, SEXP decErrorSEXP, SEXP distSEXP, SEXP bearSEXP, SEXP angleSEXP, SEXP y_gainSEXP, SEXP y_expendSEXP, SEXP penaltySEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< int >::type MinT(MinTSEXP);
@@ -54,10 +54,11 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type decError(decErrorSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type dist(distSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type bear(bearSEXP);
+    Rcpp::traits::input_parameter< double >::type angle(angleSEXP);
     Rcpp::traits::input_parameter< Rcpp::NumericVector >::type y_gain(y_gainSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type y_expend(y_expendSEXP);
     Rcpp::traits::input_parameter< Rcpp::NumericVector >::type penalty(penaltySEXP);
-    Init(MinT, MaxT, NSites, MaxX, w, xc, B0, b0, b1, b2, pred_a1, pred_a2, c, speed, WindAssist, WindProb, ZStdNorm, PStdNorm, nTR_x, nTR_y, decError, dist, bear, y_gain, y_expend, penalty);
+    Init(MinT, MaxT, NSites, MaxX, w, xc, B0, b0, b1, b2, pred_a1, pred_a2, c, speed, WindAssist, WindProb, ZStdNorm, PStdNorm, nTR_x, nTR_y, decError, dist, bear, angle, y_gain, y_expend, penalty);
     return R_NilValue;
 END_RCPP
 }
@@ -136,7 +137,7 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_migrationSDP_Predation", (DL_FUNC) &_migrationSDP_Predation, 5},
-    {"_migrationSDP_Init", (DL_FUNC) &_migrationSDP_Init, 26},
+    {"_migrationSDP_Init", (DL_FUNC) &_migrationSDP_Init, 27},
     {"_migrationSDP_BackwardIteration", (DL_FUNC) &_migrationSDP_BackwardIteration, 0},
     {"_migrationSDP_InitSim", (DL_FUNC) &_migrationSDP_InitSim, 25},
     {"_migrationSDP_simForaging", (DL_FUNC) &_migrationSDP_simForaging, 4},

@@ -56,6 +56,7 @@ make_migrationSDP <- function(init, species, sites, parms, ...) {
       crds  = sites$crds,
       dist  = distM,
       bear  = bearM,
+      angle = parms$angle,
       b0    = rep(sites$pred[1], nrow(sites$crds)),
       b1    = rep(sites$pred[2], nrow(sites$crds)),
       b2    = rep(sites$pred[3], nrow(sites$crds)),
@@ -99,6 +100,7 @@ bwdIteration <- function(obj) {
        obj@Species$decError,   ## double
        obj@Sites$dist,         ## arma::mat
        obj@Sites$bear,         ## arma::mat
+       obj@Sites$angle,        ## double
        obj@Sites$gain,         ## Rcpp::NumericVector 
        obj@Sites$expend,       ## arma::mat
        obj@Sites$penalty       ## Rcpp::NumericVector 

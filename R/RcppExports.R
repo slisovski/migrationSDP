@@ -5,8 +5,8 @@ Predation <- function(time, site, x, u, f) {
     .Call(`_migrationSDP_Predation`, time, site, x, u, f)
 }
 
-Init <- function(MinT, MaxT, NSites, MaxX, w, xc, B0, b0, b1, b2, pred_a1, pred_a2, c, speed, WindAssist, WindProb, ZStdNorm, PStdNorm, nTR_x, nTR_y, decError, dist, bear, y_gain, y_expend, penalty) {
-    invisible(.Call(`_migrationSDP_Init`, MinT, MaxT, NSites, MaxX, w, xc, B0, b0, b1, b2, pred_a1, pred_a2, c, speed, WindAssist, WindProb, ZStdNorm, PStdNorm, nTR_x, nTR_y, decError, dist, bear, y_gain, y_expend, penalty))
+Init <- function(MinT, MaxT, NSites, MaxX, w, xc, B0, b0, b1, b2, pred_a1, pred_a2, c, speed, WindAssist, WindProb, ZStdNorm, PStdNorm, nTR_x, nTR_y, decError, dist, bear, angle, y_gain, y_expend, penalty) {
+    invisible(.Call(`_migrationSDP_Init`, MinT, MaxT, NSites, MaxX, w, xc, B0, b0, b1, b2, pred_a1, pred_a2, c, speed, WindAssist, WindProb, ZStdNorm, PStdNorm, nTR_x, nTR_y, decError, dist, bear, angle, y_gain, y_expend, penalty))
 }
 
 BackwardIteration <- function() {

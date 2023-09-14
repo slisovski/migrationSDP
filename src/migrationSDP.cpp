@@ -31,6 +31,7 @@ double decError;
 // Sites
 arma::mat dist;
 arma::mat bear;
+double angle;
 arma::vec nTR_x;
 arma::vec nTR_y;
 arma::mat expend;
@@ -379,6 +380,7 @@ void Init( int MinT,
            double decError,
            arma::mat dist,
            arma::mat bear,
+           double angle,
            Rcpp::NumericVector y_gain,
            arma::mat y_expend,
            Rcpp::NumericVector penalty
@@ -412,6 +414,7 @@ void Init( int MinT,
   // Sites
   sdp::dist   = dist;
   sdp::bear   = bear;
+  sdp::angle  = angle;
   sdp::y_gain = y_gain;
   sdp::expend = y_expend;
   sdp::penalty = penalty;
@@ -481,7 +484,7 @@ Rcpp::List BackwardIteration() {
 
         for (int dest = 0; dest <= sdp::NSites; ++dest)
         {
-          if(sdp::bear(dest, site)>80) {
+          if(sdp::bear(dest, site)>sdp::angle) {
             float help_z = Flying(time, site, x, dest);
             if(dest == site) help_z = 0;
             Mrew[dest] = help_z;
