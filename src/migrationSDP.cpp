@@ -484,7 +484,7 @@ Rcpp::List BackwardIteration() {
 
         for (int dest = 0; dest <= sdp::NSites; ++dest)
         {
-          if(sdp::bear(dest, site)>sdp::angle) {
+          if(sdp::bear(dest, site)>0) {
             float help_z = Flying(time, site, x, dest);
             if(dest == site) help_z = 0;
             Mrew[dest] = help_z;

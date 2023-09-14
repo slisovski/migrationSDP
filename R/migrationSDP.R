@@ -21,14 +21,15 @@ make_migrationSDP <- function(init, species, sites, parms, ...) {
   
   if(parms$bearing) {
 
-    bearM <- distm(crds_sf %>% st_coordinates(), fun = geosphere::bearing)
-    bearM[lower.tri(bearM)] <- bearM[lower.tri(bearM)] -180 %% 360
-    bearM <- abs(bearM)
+    bearM <- suppressWarnings(distm(crds_sf %>% st_shift_longitude() %>% st_coordinates(), fun = geosphere::bearingRhumb))
+    bearM[upper.tri(bearM)] <- (bearM[upper.tri(bearM)] + 180) %% 360
     
-  } else bearM <- matrix(0, ncol = nrow(crds_sf), nrow = nrow(crds_sf))
+    # bearM <- ifelse(bearM<(180-parms$angle) | bearM>(180+parms$angle), 0, 1)
+    bearM <- ifelse(bearM>70 & bearM<290, 1, 0)
+    
+  } else bearM <- matrix(1, ncol = nrow(crds_sf), nrow = nrow(crds_sf))
   
   penalty <- 1-rep(sites$penalty, c(1, nrow(crds)-2, 1))
-  
   
   new(
     "migrationSDP",
