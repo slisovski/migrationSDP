@@ -33,9 +33,10 @@ make_migrationSDP <- function(init, species, sites, parms, ...) {
   new(
     "migrationSDP",
     Init  = list(
-      MaxT   = length(init$minT:init$maxT)-1,
-      NSites = nrow(sites$crds)-1,
-      MaxX   = init$MaxX
+      scenario = init$scenario,
+      MaxT     = length(init$minT:init$maxT)-1,
+      NSites   = nrow(sites$crds)-1,
+      MaxX     = init$MaxX
     ),
     Species = list(
       B0    = species$B0,
@@ -54,6 +55,7 @@ make_migrationSDP <- function(init, species, sites, parms, ...) {
     ),
     Sites = list(
       crds  = sites$crds,
+      index = sites$gain %>% pull(index),
       dist  = distM,
       bear  = bearM,
       angle = parms$angle,
@@ -62,7 +64,7 @@ make_migrationSDP <- function(init, species, sites, parms, ...) {
       b2    = rep(sites$pred[3], nrow(sites$crds)),
       pred_a1 =  sites$pred[4],
       pred_a2 =  sites$pred[4],
-      gain    = sites$gain,
+      gain    = sites$gain %>% pull(init$scenario+1),
       expend  = sites$expend,
       penalty = penalty
     ),
