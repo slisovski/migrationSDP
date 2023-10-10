@@ -64,7 +64,7 @@ make_migrationSDP <- function(init, species, sites, parms, ...) {
       b2    = rep(sites$pred[3], nrow(sites$crds)),
       pred_a1 =  sites$pred[4],
       pred_a2 =  sites$pred[4],
-      gain    = sites$gain %>% pull(init$scenario+1),
+      gain    = sites$gain %>% pull(init$scenario+2),
       expend  = sites$expend,
       penalty = penalty
     ),
